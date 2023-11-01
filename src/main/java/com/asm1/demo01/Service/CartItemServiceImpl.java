@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.context.annotation.SessionScope;
 
+import com.asm1.demo01.DAO.CartDAO;
 import com.asm1.demo01.DAO.CartItemDAO;
 import com.asm1.demo01.DAO.ColorDAO;
 import com.asm1.demo01.DAO.OrderDAO;
@@ -26,6 +27,9 @@ import com.asm1.demo01.model.User;
 public class CartItemServiceImpl implements CartItemService {
 	@Autowired
 	CartItemDAO cartItemDAO;
+	
+	@Autowired
+	CartDAO cartDAO;
 
 	@Autowired
 	OrderDAO orderDAO;
@@ -103,7 +107,10 @@ public class CartItemServiceImpl implements CartItemService {
 
 	@Override
 	public void removeProductFromCart(Integer cartItemId) {
-		cartItemDAO.deleteById(cartItemId); // Xóa CartItem dựa trên ID
+		CartItem ci= cartItemDAO.findById(cartItemId).orElse(new CartItem());
+		Cart id = ci.getCart();
+		ci.setCart(null);
+		cartItemDAO.delete(ci);
 	}
 
 	@Override
@@ -143,9 +150,19 @@ public class CartItemServiceImpl implements CartItemService {
 
 	@Override
 	public double getCartTotalAmount(User user) {
-		// Tính tổng giá trị của Cart bằng user.
-		Double totalAmount = cartItemDAO.sumTotalPriceByCart(cartService.getCartByUser(user));
-		return totalAmount != null ? totalAmount : 0;
+	    try {
+	    	 Cart cart = cartService.getCartByUser(user);
+	    	 double totalAmount = 0.0;
+	 	    for (CartItem cartItem : cart.getCartItems()) {
+	 	        totalAmount += cartItem.getPrice();
+	 	    }
+	 	    
+	 	    return totalAmount;
+		} catch (Exception e) {
+			// TODO: handle exception
+			 return 0; 
+		}
+	   
 	}
 
 	@Override
