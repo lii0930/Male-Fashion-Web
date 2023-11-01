@@ -162,9 +162,11 @@ public class CartController {
 
 		// tính tổng tiền sau khi giảm giá
 		double endOfDiscount = 0.0;
+		if(cartItemList!=null) {
 		for (CartItem item : cartItemList) {
 			endOfDiscount += (item.getProduct().getPrice()
 					- (item.getProduct().getPrice() * item.getProduct().getDiscount() / 100)) * item.getQuantity();
+			}
 		}
 		model.addAttribute("img", imgService.findByThumb(true));
 
@@ -222,7 +224,6 @@ public class CartController {
 
 	@RequestMapping("cart/remove/{cartItemId}")
 	public String removePD(@PathVariable("cartItemId") Integer cartItemId) {
-
 		cartItemService.removeProductFromCart(cartItemId);
 		return "redirect:/asm/shopping-cart";
 	}
